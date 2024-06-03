@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Merge JSON Events</title>
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: left;
+      }
+
+      th {
+        background-color: #f2f2f2;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+
+      .sticky-header {
+        position: sticky;
+        top: 0;
+        background-color: #f2f2f2;
+        z-index: 1;
+      }
+
+      .action1 {
+        background-color: lightblue;
+      }
+      .action2 {
+        background-color: lightgreen;
+      }
+      .action3 {
+        background-color: lightcoral;
+      }
+      .action4 {
+        background-color: lightyellow;
+      }
+      .action5 {
+        background-color: lightpink;
+      }
+      .action6 {
+        background-color: lightgray;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Operator Log</h1>
+
+    <input type="file" id="fileInput" accept=".json" />
+    <button onclick="handleFile()">Добавить файл</button>
+
+    <table id="dataTable">
+      <thead class="sticky-header">
+        <tr>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Server</th>
+          <th>List</th>
+          <th>Action</th>
+          <th>pl_Time</th>
+          <th>pr_id</th>
+          <th>WP</th>
+        </tr>
+      </thead>
+      <tbody id="dataBody"></tbody>
+    </table>
+
+    <script>
+      function handleFile() {
+        const fileInput = document.getElementById("fileInput");
+        const file = fileInput.files[0];
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const jsonData = JSON.parse(e.target.result);
+          const tableBody = document.getElementById("dataBody");
+          tableBody.innerHTML = "";
+
+          jsonData.forEach((event) => {
+            const row = document.createElement("tr");
+            const keys = [
+              "Date",
+              "Time",
+              "Server",
+              "List",
+              "Action",
+              "pl_Time",
+              "pr_id",
+              "WP",
+            ];
+
+            keys.forEach((key) => {
+              const cell = document.createElement("td");
+              cell.textContent = event[key] || "";
+              cell.setAttribute("data-key", key);
+              cell.setAttribute("data-value", event[key] || "");
+
+              switch (event.Action) {
+                case "AppendList":
+                  cell.classList.add("action1");
+                  break;
+                case "Toggle_hard_start":
+                  cell.classList.add("action2");
+                  break;
+                case "Del_/_Cut_Primary":
+                  cell.classList.add("action3");
+                  break;
+                case "Del_/_Cut_Secondary":
+                  cell.classList.add("action4");
+                  break;
+                case "Copy_Primary":
+                  cell.classList.add("action5");
+                  break;
+                case "Copy_Secondary":
+                  cell.classList.add("action6");
+                  break;
+                default:
+                  break;
+              }
+
+              row.appendChild(cell);
+            });
+
+            tableBody.appendChild(row);
+          });
+        };
+
+        reader.readAsText(file);
+      }
+    </script>
+  </body>
+</html>
