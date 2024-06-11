@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Лог Парсер</title>
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #f2f2f2;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+      .sticky-header {
+        position: sticky;
+        top: 0;
+        background-color: #f2f2f2;
+        z-index: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Парсер Логов</h1>
+      <input type="file" id="fileInput" accept=".log" />
+      <button onclick="parseFile()">Парсить файл</button>
+      <table id="logTable">
+        <thead class="sticky-header">
+          <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Server</th>
+            <th>List</th>
+            <th>Action</th>
+            <th>pl_Time</th>
+            <th>pr_id</th>
+            <th>Title</th>
+            <th>WP</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Данные будут добавлены здесь -->
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      document
+        .getElementById("fileInput")
+        .addEventListener("change", handleFile, false);
+
+      function handleFile(event) {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const contents = e.target.result;
+
+            parseLog(contents);
+          };
+          reader.readAsText(file, "UTF-8"); // Установка кодировки UTF-8
+        }
+      }
+
+      function parseLog(contents) {
+        const lines = contents.split("\n");
+        const tableBody = document.querySelector("#logTable tbody");
+        tableBody.innerHTML = ""; // Очищаем таблицу перед заполнением
+
+        const regexDel =
+          /(\d{4}-\d{2}-\d{2})\s(\d{2}:\d{2}:\d{2},\d{3})\s-\s(.*?)\s+List:__-_(.*?)_:_(.*?)[,_]_Time:_'(.*?)',_ID:_'(.*?)',_Title:'(.*?)' Playlist_on_(\w+)/;
+        const regexCopy =
+          /(\d{4}-\d{2}-\d{2})\s(\d{2}:\d{2}:\d{2},\d{3})\s-\s(.*?)\s+List:(.*?)_:(.*?)[,_]Time:_'(.*?)',_ID:_'(.*?)',_Title:'(.*?)'_ Playlist_on_(\w+)/;
+      //не работает  const regexAppend =
+          /(\d{4}-\d{2}-\d{2})\s(\d{2}:\d{2}:\d{2},\d{3}) - (\S+)\s+(\S+)\s+.*?Time:\s+'(\d{2}:\d{2}:\d{2}:\d{2})',\s+ID:\s+'(\w+)',\s+Title:'([^']+)' Playlist_on_(\w+)/; //не работает
+
+        lines.forEach((line, index) => {
+          console.log(line);
+          const match = regexDel.exec(line);
+          const match2 = regexCopy.exec(line);
+          const match3 = regexAppend.exec(line);
+          if (match) {
+            const date = match[1];
+            const time = match[2];
+            const server = match[3].trim();
+            const list = match[4];
+            const action = match[5].trim();
+            const plTime = match[6];
+            const prId = match[7];
+            const title = match[8];
+            const wp = match[9];
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                    <td>${date}</td>
+                    <td>${time}</td>
+                    <td>${server}</td>
+                    <td>${list}</td>
+                    <td>${action}</td>
+                    <td>${plTime}</td>
+                    <td>${prId}</td>
+                    <td>${title}</td>
+                    <td>${wp}</td>
+                `;
+            tableBody.appendChild(row);
+          } else {
+            //console.log("Строка лога не соответствует формату.");
+          }
+          if (match2) {
+            const date = match2[1];
+            const time = match2[2];
+            const server = match2[3].trim();
+            const list = match2[4];
+            const action = match2[5].trim();
+            const plTime = match2[6];
+            const prId = match2[7];
+            const title = match2[8];
+            const wp = match2[9];
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                    <td>${date}</td>
+                    <td>${time}</td>
+                    <td>${server}</td>
+                    <td>${list}</td>
+                    <td>${action}</td>
+                    <td>${plTime}</td>
+                    <td>${prId}</td>
+                    <td>${title}</td>
+                    <td>${wp}</td>
+                `;
+            tableBody.appendChild(row);
+          } else if (match3) {
+            const date = match3[1];
+            const time = match3[2];
+            const server = match3[3].trim();
+            const list = match3[4];
+            const action = match3[5].trim();
+            const plTime = match3[6];
+            const prId = match3[7];
+            const title = match3[8];
+            const wp = match3[9];
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                    <td>${date}</td>
+                    <td>${time}</td>
+                    <td>${server}</td>
+                    <td>${list}</td>
+                    <td>${action}</td>
+                    <td>${plTime}</td>
+                    <td>${prId}</td>
+                    <td>${title}</td>
+                    <td>${wp}</td>
+                `;
+            tableBody.appendChild(row);
+          }
+        });
+      }
+
+      function parseFile() {
+        const input = document.getElementById("fileInput");
+        if (!input.files.length) {
+          alert("Пожалуйста, выберите файл.");
+          return;
+        }
+        handleFile({ target: input });
+      }
+    </script>
+  </body>
+</html>
