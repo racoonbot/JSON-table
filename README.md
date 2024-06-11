@@ -30,8 +30,10 @@
 *Без конвертации в JSON.*  
 
  [Log Viewer (regex)](https://github.com/racoonbot/OperatorLog-Viewer/blob/main/Log%20Viewer%20(regex) "Log Viewer (regex)") Не доделанная отображалка OperatorOfPlaylist.log  которая работает с использованием регулярных выражений.  
-  
+ Инструкция:
+ 1. Просто открываем нужный нам OperatorLog файл.
  Отображает только события: Del/Cut_Primary,Del/Cut_Secondary, Copy_Primary, Copy_Secondary.
+
 
 
 
