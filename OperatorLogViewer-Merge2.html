@@ -242,47 +242,48 @@
     <script>
       
       
-      function mergeRowsByTime() {
-        const rows = document.querySelectorAll("#dataBody tr");
-        const mergedRows = {};
-    
-        rows.forEach((row) => {
-            const time = row.querySelector("td[data-key='Time']").textContent;
-            if (time in mergedRows) {
-                const existingRow = mergedRows[time];
-                const cells = row.querySelectorAll("td");
-                cells.forEach((cell) => {
-                    const key = cell.getAttribute("data-key");
-                    if (key !== "Time") {
-                        const existingCell = existingRow.querySelector(`td[data-key='${key}']`);
-                        if (existingCell) {
-                            const existingValue = existingCell.textContent;
-                            const cellValue = cell.textContent;
-                            if (!existingValue.includes(cellValue)) {
-                                existingCell.textContent += `, ${cellValue}`;
+        function mergeRowsByTime() {
+            const rows = document.querySelectorAll("#dataBody tr");
+            const mergedRows = {};
+        
+            rows.forEach((row) => {
+                const time = row.querySelector("td[data-key='Time']").textContent;
+                const timeKey = time.split(":").slice(0, 3).join(":"); // Округляем до секунды
+        
+                if (timeKey in mergedRows) {
+                    const existingRow = mergedRows[timeKey];
+                    const cells = row.querySelectorAll("td");
+                    cells.forEach((cell) => {
+                        const key = cell.getAttribute("data-key");
+                        if (key !== "Time") {
+                            const existingCell = existingRow.querySelector(`td[data-key='${key}']`);
+                            if (existingCell) {
+                                const existingValue = existingCell.textContent;
+                                const cellValue = cell.textContent;
+                                if (!existingValue.includes(cellValue)) {
+                                    existingCell.textContent += `, ${cellValue}`;
+                                }
+                            } else {
+                                const newCell = document.createElement("td");
+                                newCell.textContent = cell.textContent;
+                                newCell.setAttribute("data-key", key);
+                                newCell.setAttribute("data-value", cell.getAttribute("data-value"));
+                                existingRow.appendChild(newCell);
                             }
-                        } else {
-                            const newCell = document.createElement("td");
-                            newCell.textContent = cell.textContent;
-                            newCell.setAttribute("data-key", key);
-                            newCell.setAttribute("data-value", cell.getAttribute("data-value"));
-                            existingRow.appendChild(newCell);
                         }
-                    }
-                });
-            } else {
-                mergedRows[time] = row;
-            }
-        });
-    
-        const tableBody = document.getElementById("dataBody");
-        tableBody.innerHTML = "";
-        Object.values(mergedRows).forEach((row) => {
-            tableBody.appendChild(row);
-        });
-    }
-    
-
+                    });
+                } else {
+                    mergedRows[timeKey] = row;
+                }
+            });
+        
+            const tableBody = document.getElementById("dataBody");
+            tableBody.innerHTML = "";
+            Object.values(mergedRows).forEach((row) => {
+                tableBody.appendChild(row);
+            });
+        }
+        
 
       
       

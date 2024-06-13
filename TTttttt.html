@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Преобразование .log файла в JSON</title>
+  </head>
+  <body>
+    <input type="file" id="fileInput" accept=".log" />
+    <button onclick="processLog()">Преобразовать в JSON</button>
+
+    <script>
+      let processedData = [];
+
+      function processLog() {
+        const fileInput = document.getElementById("fileInput");
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (event) {
+          const fileContent = event.target.result;
+          const lines = fileContent.split("\n");
+
+          processedData = [];
+          lines.forEach((line) => {
+            if (
+              line.includes("Del_/_Cut_Primary") ||
+              line.includes("Del_/_Cut_Secondary")
+            ) {
+              const cleanedLine = line.replace(/[\x00-\x1F\x7F-\x9F]/g, "");
+              const delData = cleanedLine.split(
+                / |_-_|_:_|:_|_-_|_#_|:_'|e:_'|',_ID:_'|',_Title:'|Playlist_on_/
+              );
+
+              let server = delData[23].replace("List:_", "");
+              let title = delData[30] + " " + delData[31] + "\n" + delData[32];
+
+              if (line.includes("Del_/_Cut_Primary")) {
+                const json = {
+                  Date: delData[0],
+                  Time: delData[1],
+                  Action: delData[26],
+                  pr_id: delData[29],
+                  Server: server,
+                  List: delData[25],
+                  pl_Time: delData[28],
+                  WP: delData[33],
+                  title: title,
+                };
+                processedData.push(json);
+              } else if (line.includes("Del_/_Cut_Secondary")) {
+                if (
+                  typeof delData[39] === "undefined" ||
+                  !delData[39].includes(" WP")
+                ) {
+                  delData[39] = delData[41];
+                }
+                delData[29] = delData[29].replace("Title:'", "");
+                delData[29] = delData[29].replace("'_", "");
+                const json = {
+                  Date: delData[0],
+                  Time: delData[1],
+                  Server: server,
+                  List: delData[24],
+                  Action: delData[25],
+                  pl_Time: delData[27],
+                  pr_id: delData[28],
+                  WP: delData[39],
+                  title: delData[29],
+                };
+                processedData.push(json);
+              }
+            }
+          });
+
+          const outputData = JSON.stringify(processedData, null, 2);
+
+          const blob = new Blob([outputData], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "processed_data.json";
+          a.click();
+        };
+
+        reader.readAsText(file, "windows-1251");
+      }
+
+      function processJSON() {
+        const jsonData = processedData;
+
+        const mergedData = {};
+        jsonData.forEach((item) => {
+          const timeKey = item.Time.split(",")[0];
+          if (!mergedData[timeKey]) {
+            mergedData[timeKey] = {};
+          }
+          mergedData[timeKey] = { ...mergedData[timeKey], ...item };
+        });
+
+        const outputData = Object.values(mergedData).map((obj) => {
+          const timeParts = obj.Time.split(",");
+          const roundedTime = timeParts[0]; // Округляем до секунды
+          obj.Time = roundedTime;
+          return obj;
+        });
+
+        const outputJSON = JSON.stringify(outputData, null, 2);
+
+        const blob = new Blob([outputJSON], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "processed_data_rounded.json";
+        a.click();
+      }
+    </script>
+  </body>
+</html>
